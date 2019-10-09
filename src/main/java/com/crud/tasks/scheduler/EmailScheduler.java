@@ -13,7 +13,7 @@ import java.util.function.Function;
 
 @Component
 public class EmailScheduler {
-    private static final String SUBJECT = "Tasks: Once a day email";
+    public static final String SUBJECT = "Tasks: Once a day email";
 
     @Autowired
     private SimpleEmailService simpleEmailService;

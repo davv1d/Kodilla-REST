@@ -1,6 +1,7 @@
 package com.crud.tasks.service;
 
 import com.crud.tasks.domain.Mail;
+import com.crud.tasks.scheduler.EmailScheduler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,8 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.mail.javamail.MimeMessagePreparator;
 import org.springframework.stereotype.Service;
+
+import java.util.function.Function;
 
 @Service
 public class SimpleEmailService {
@@ -35,8 +38,16 @@ public class SimpleEmailService {
             MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage);
             messageHelper.setTo(mail.getMailTo());
             messageHelper.setSubject(mail.getSubject());
-            messageHelper.setText(mailCreatorService.buildTrelloCardEmail(mail.getMessage()), true);
+            messageHelper.setText(chooseKindOfEmail(mail.getSubject()).apply(mail.getMessage()), true);
         };
+    }
+
+    private Function<String, String> chooseKindOfEmail(final String subject) {
+        if (subject.equals(EmailScheduler.SUBJECT)) {
+            return mailCreatorService::buildPeriodicEmailWithNumberOfTasks;
+        } else {
+            return mailCreatorService::buildTrelloCardEmail;
+        }
     }
 
     private SimpleMailMessage createMailMessage(final Mail mail) {
